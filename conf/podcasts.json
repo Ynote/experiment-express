@@ -1,0 +1,12 @@
+{
+    "France Inter":
+    {
+        "Livres en poche"                : "http://radiofrance-podcast.net/podcast09/rss_11555.xml",
+        "Le masque et la plume"          : "http://radiofrance-podcast.net/podcast09/rss_14007.xml",
+        "Le billet de Francois Rollin"   : "http://radiofrance-podcast.net/podcast09/rss_14016.xml"
+    },
+    "TETETE":
+    {
+        "Les femmes, toute une histoire" : "http://radiofrance-podcast.net/podcast09/rss_12155.xml"
+    }
+}
