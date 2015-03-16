@@ -1,4 +1,4 @@
-var R, app, express, list, podcast, server;
+var Q, R, app, express, list, podcast, podcastsP, server;
 
 express = require('express');
 
@@ -10,10 +10,18 @@ list = require('./../../conf/podcasts.json');
 
 R = require('ramda');
 
-app.get('/', function(req, res) {
-  return res.send('Hi');
-});
+Q = require('q');
+
+podcastsP = podcast.getAll(list.podcasts);
+
+R.map(function(x) {
+  return Q.all(x).spread(function() {
+    return console.log(arguments);
+  });
+})(podcastsP);
+
+app.get('/', function(req, res) {});
 
 server = app.listen(3000, function() {
-  return console.log('listen on port 3000');
+  return console.log('listen');
 });
