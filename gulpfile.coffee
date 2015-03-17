@@ -1,9 +1,12 @@
+# modules
 gulp    = require 'gulp'
-plumber = require('gulp-plumber')
+plumber = require 'gulp-plumber'
 coffee  = require 'gulp-coffee'
 
+# coffee conf
 coffeePath = 'coffee/**/*.coffee'
 
+# tasks
 gulp.task 'coffee', ->
     gulp.src coffeePath
         .pipe(plumber())
