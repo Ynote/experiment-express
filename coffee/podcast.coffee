@@ -7,7 +7,7 @@ Q             = require 'q'
 http          = require 'http'
 
 # Private methods
-getItemData = R.curry (item) ->
+getPodcastData = R.curry (item) ->
     podcast =
         title : item.title[0],
         date  : item.pubDate[0],
@@ -16,7 +16,7 @@ getItemData = R.curry (item) ->
 getChannelData = R.curry (channel) ->
     res =
         title: channel.title[0],
-        podcasts: R.map(getItemData)(channel.item)
+        podcasts: R.map(getPodcastData)(channel.item)
 
 getStreamData = R.curry (xml) ->
     deferred = Q.defer()
@@ -30,11 +30,8 @@ getStreamData = R.curry (xml) ->
 # Module & public methods / properties
 podcast =
     parseXml: (promise) ->
-        deferred = Q.defer()
         promise.then (xml) ->
             podcasts = getStreamData xml
-            deferred.resolve podcasts
-        deferred.promise
 
     getXml: (path) ->
         deferred = Q.defer()
@@ -47,15 +44,25 @@ podcast =
         deferred.promise
 
     getListByDistributor: (res) ->
+        deferred = Q.defer()
         podcastsP = R.pipe(
             R.values(),
             R.map(podcast.getXml),
-            R.map(podcast.parseXml)
+            R.map(podcast.parseXml),
+            Q.all
         )(res.rss)
+
+        podcastsP.spread (x) ->
+            list =
+                distributor: res.name,
+                streams: x
+            deferred.resolve list
+        deferred.promise
 
     getAll: (list) ->
         podcastsP = R.pipeP(
-            R.map(podcast.getListByDistributor)
+            R.map(podcast.getListByDistributor),
+            Q.all
         )(list)
 
 module.exports = podcast

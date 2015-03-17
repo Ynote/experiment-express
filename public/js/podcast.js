@@ -1,4 +1,4 @@
-var Q, R, ansi, cursor, fs, getChannelData, getItemData, getStreamData, http, parseString, podcast;
+var Q, R, ansi, cursor, fs, getChannelData, getPodcastData, getStreamData, http, parseString, podcast;
 
 fs = require('fs');
 
@@ -14,7 +14,7 @@ Q = require('q');
 
 http = require('http');
 
-getItemData = R.curry(function(item) {
+getPodcastData = R.curry(function(item) {
   var podcast;
   return podcast = {
     title: item.title[0],
@@ -27,7 +27,7 @@ getChannelData = R.curry(function(channel) {
   var res;
   return res = {
     title: channel.title[0],
-    podcasts: R.map(getItemData)(channel.item)
+    podcasts: R.map(getPodcastData)(channel.item)
   };
 });
 
@@ -46,14 +46,10 @@ getStreamData = R.curry(function(xml) {
 
 podcast = {
   parseXml: function(promise) {
-    var deferred;
-    deferred = Q.defer();
-    promise.then(function(xml) {
+    return promise.then(function(xml) {
       var podcasts;
-      podcasts = getStreamData(xml);
-      return deferred.resolve(podcasts);
+      return podcasts = getStreamData(xml);
     });
-    return deferred.promise;
   },
   getXml: function(path) {
     var deferred;
@@ -71,12 +67,22 @@ podcast = {
     return deferred.promise;
   },
   getListByDistributor: function(res) {
-    var podcastsP;
-    return podcastsP = R.pipe(R.values(), R.map(podcast.getXml), R.map(podcast.parseXml))(res.rss);
+    var deferred, podcastsP;
+    deferred = Q.defer();
+    podcastsP = R.pipe(R.values(), R.map(podcast.getXml), R.map(podcast.parseXml), Q.all)(res.rss);
+    podcastsP.spread(function(x) {
+      var list;
+      list = {
+        distributor: res.name,
+        streams: x
+      };
+      return deferred.resolve(list);
+    });
+    return deferred.promise;
   },
   getAll: function(list) {
     var podcastsP;
-    return podcastsP = R.pipeP(R.map(podcast.getListByDistributor))(list);
+    return podcastsP = R.pipeP(R.map(podcast.getListByDistributor), Q.all)(list);
   }
 };
 
