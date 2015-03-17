@@ -1,27 +1,42 @@
-var Q, R, app, express, list, podcast, podcastsP, server;
+var Q, ansi, app, cursor, express, getPodcasts, list, podcast, server;
 
-express = require('express');
+ansi = require('ansi');
 
-app = express();
+cursor = ansi(process.stdout);
 
 podcast = require('./podcast');
 
 list = require('./../../conf/podcasts.json');
 
-R = require('ramda');
-
 Q = require('q');
 
-podcastsP = podcast.getAll(list.podcasts);
+express = require('express');
 
-R.map(function(x) {
-  return Q.all(x).spread(function() {
-    return console.log(arguments);
+app = express();
+
+getPodcasts = function() {
+  var podcastsP;
+  podcastsP = podcast.getAll(list.podcasts);
+  return podcastsP.spread(function() {
+    var args;
+    return args = Array.prototype.slice.call(arguments);
   });
-})(podcastsP);
+};
 
-app.get('/', function(req, res) {});
+app.set('views', './views');
 
-server = app.listen(3000, function() {
-  return console.log('listen');
+app.set('view engine', 'jade');
+
+app.get('/', function(req, res) {
+  cursor.grey().write('[dl-podcasts] - Fetching podcasts...\n');
+  return getPodcasts().then(function(podcasts) {
+    cursor.write('[dl-podcasts] - Podcasts fetched!\n').reset();
+    return res.render('index', {
+      podcasts: podcasts
+    });
+  });
+});
+
+server = app.listen('3000', function() {
+  return cursor.green().write("[dl-podcasts] - App listening on http://" + (server.address().address) + ":" + (server.address().port) + "\n");
 });
