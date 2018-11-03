@@ -1,11 +1,15 @@
-# dl-podcasts
+# Experiment Express
 
-Utility app to display mp3 links from a list of podcasts
+> Experiment from 2014
 
-Edit the `conf/podcasts.json`
+This is a small project that intends to test Webpack 1 and Jade in an Express application.
 
-Launch the server
+It is a app that display mp3 links from a list of podcasts
 
+## Usage 
+
+- Edit the `conf/podcasts.json`
+- Launch the server
 ```
 npm start
 ```
